@@ -1,0 +1,25 @@
+{
+    "name": "kikwik/doctrine-entity-logger-bundle",
+    "description": "Listener for doctrine entity changes",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "Davide Scarpato",
+            "email": "davide@kikwik.it"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "symfony/framework-bundle": "^6.4|^7.0",
+        "stof/doctrine-extensions-bundle": "^1.7",
+        "doctrine/orm": "^3.3",
+        "symfony/security-bundle": "^7.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kikwik\\DoctrineEntityLoggerBundle\\": "src/"
+        }
+    }
+}
