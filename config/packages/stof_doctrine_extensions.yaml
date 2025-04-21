@@ -1,0 +1,5 @@
+orm:
+    default:
+        timestampable: true
+        blameable: true
+        ip_traceable: true
