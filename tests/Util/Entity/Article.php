@@ -65,12 +65,18 @@ class Article
         return $this->tags;
     }
 
-    public function setTags(Collection $tags): Article
+    public function addTag(Tag $tag): Article
     {
-        $this->tags = $tags;
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
         return $this;
     }
 
-
+    public function removeTag(Tag $tag): Article
+    {
+        $this->tags->removeElement($tag);
+        return $this;
+    }
 
 }

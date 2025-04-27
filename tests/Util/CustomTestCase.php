@@ -8,6 +8,7 @@ use Doctrine\ORM\Tools\SchemaTool;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Article;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Author;
+use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Tag;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Filesystem\Filesystem;
@@ -63,14 +64,30 @@ class CustomTestCase extends KernelTestCase
         return $author;
     }
 
-    protected function createArticle(string $title, Author $author): Article
+    protected function createArticle(string $title, ?Author $author = null, ?array $tags = null): Article
     {
         $article = new Article();
         $article->setTitle($title);
         $article->setAuthor($author);
+        if($tags)
+        {
+            foreach($tags as $tag)
+            {
+                $article->addTag($tag);
+            }
+        }
         $this->getEntityManager()->persist($article);
         $this->getEntityManager()->flush();
         return $article;
+    }
+
+    protected function createTag(string $name): Tag
+    {
+        $tag = new Tag();
+        $tag->setName($name);
+        $this->getEntityManager()->persist($tag);
+        $this->getEntityManager()->flush();
+        return $tag;
     }
 
 

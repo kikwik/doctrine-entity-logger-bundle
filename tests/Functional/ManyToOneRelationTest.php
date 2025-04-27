@@ -9,26 +9,26 @@ use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Author;
 
 class ManyToOneRelationTest extends CustomTestCase
 {
-    public function testPersistEntityWithRelation(): void
+    public function testPersistManyToOneRelation(): void
     {
         // create an author and an article
         $author = $this->createAuthor('Joseph Pulitzer');
-        $article = $this->createArticle('Article 1', $author);
+        $article = $this->createArticle('Around the World in Seventy-two Days', $author);
         $articleId = $article->getId();
 
         // check entity log
         $this->assertEntityLog(Article::class, $articleId,
             Log::ACTION_CREATE,
             null,
-            ['title' => 'Article 1', 'id'=>$articleId, 'author' => ['class'=>Author::class, 'id'=>$author->getId(), 'toString'=>$author->getName()], 'tags'=>[]]
+            ['title' => 'Around the World in Seventy-two Days', 'id'=>$articleId, 'author' => ['class'=>Author::class, 'id'=>$author->getId(), 'toString'=>'Joseph Pulitzer'], 'tags'=>[]]
         );
     }
 
-    public function testUpdateRelation()
+    public function testUpdateManyToOneRelation()
     {
         // create an author and an article
         $author1 = $this->createAuthor('Joseph Pulitzer');
-        $article = $this->createArticle('Article 1', $author1);
+        $article = $this->createArticle('Around the World in Seventy-two Days', $author1);
         $articleId = $article->getId();
 
         // create an author and change article's author
@@ -41,6 +41,25 @@ class ManyToOneRelationTest extends CustomTestCase
             Log::ACTION_UPDATE,
             ['author' => ['class'=>Author::class, 'id'=>$author1->getId(), 'toString'=>'Joseph Pulitzer']],
             ['author' => ['class'=>Author::class, 'id'=>$author2->getId(), 'toString'=>'Joseph Ratzinger']]
+        );
+    }
+
+    public function testRemoveManyToOneRelation()
+    {
+        // create an author and an article
+        $author = $this->createAuthor('Joseph Pulitzer');
+        $article = $this->createArticle('Around the World in Seventy-two Days', $author);
+        $articleId = $article->getId();
+
+        // remove author from article
+        $article->setAuthor(null);
+        $this->getEntityManager()->flush();
+
+        // check entity log
+        $this->assertEntityLog(Article::class, $articleId,
+            Log::ACTION_UPDATE,
+            ['author' => ['class'=>Author::class, 'id'=>$author->getId(), 'toString'=>'Joseph Pulitzer']],
+            ['author' => null]
         );
     }
 }
