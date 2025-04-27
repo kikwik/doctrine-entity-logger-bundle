@@ -2,13 +2,13 @@
 
 namespace Kikwik\DoctrineEntityLoggerBundle\EventListener;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\Persistence\ObjectManager;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class DoctrineEntityLogger
 {
@@ -18,27 +18,71 @@ class DoctrineEntityLogger
     public function postPersist(PostPersistEventArgs $eventArgs)
     {
         $object = $eventArgs->getObject();
-        $this->createLog(Log::ACTION_CREATE, $object, null, $this->serializeObject($object, $eventArgs->getObjectManager()));
+        $this->createLog(
+            Log::ACTION_CREATE,
+            $object,
+            null,
+            $this->serializeObject($object, $eventArgs->getObjectManager())
+        );
     }
 
     public function postUpdate(PostUpdateEventArgs $eventArgs)
     {
         $object = $eventArgs->getObject();
+        $classMetadata = $eventArgs->getObjectManager()->getClassMetadata(get_class($object));
+
+
         $unitOfWork = $eventArgs->getObjectManager()->getUnitOfWork();
         $oldValues = [];
         $newValues = [];
-        foreach($unitOfWork->getEntityChangeSet($object) as $field => $changes)
-        {
-            $oldValues[$field] = $changes[0];
-            $newValues[$field] = $changes[1];
+
+        // Gestione dei campi semplici
+        foreach ($unitOfWork->getEntityChangeSet($object) as $field => $changes) {
+            if ($this->isLoggable($classMetadata, $field)) {
+                $oldValues[$field] = $changes[0];
+                $newValues[$field] = $changes[1];
+            }
         }
-        $this->createLog(Log::ACTION_UPDATE, $object, $oldValues, $newValues);
+
+        // Cambiamenti sulle collezioni aggiornate
+        foreach ($unitOfWork->getScheduledCollectionUpdates() as $collectionUpdate) {
+            if ($collectionUpdate->getOwner() === $object) {
+                $association = $collectionUpdate->getMapping()['fieldName'];
+                if ($this->isLoggable($classMetadata, $association)) {
+                    $oldValues[$association] = $this->serializeCollection($collectionUpdate->getSnapshot());
+                    $newValues[$association] = $this->serializeCollection($collectionUpdate->toArray());
+                }
+            }
+        }
+
+        // Collezioni pianificate per eliminazione
+        foreach ($unitOfWork->getScheduledCollectionDeletions() as $collectionDeletion) {
+            if ($collectionDeletion->getOwner() === $object) {
+                $association = $collectionDeletion->getMapping()['fieldName'];
+                if ($this->isLoggable($classMetadata, $association)) {
+                    $oldValues[$association] = $this->serializeCollection($collectionDeletion->getSnapshot());
+                    $newValues[$association] = null; // La collezione è stata eliminata
+                }
+            }
+        }
+
+
+        $this->createLog(
+            Log::ACTION_UPDATE,
+            $object,
+            $oldValues,
+            $newValues
+        );
     }
 
     public function preRemove(PreRemoveEventArgs $eventArgs)
     {
         $object = $eventArgs->getObject();
-        $this->createLog(Log::ACTION_REMOVE, $object, $this->serializeObject($object, $eventArgs->getObjectManager()), null);
+        $this->createLog(
+            Log::ACTION_REMOVE,
+            $object,
+            $this->serializeObject($object, $eventArgs->getObjectManager())
+        );
     }
 
 
@@ -67,36 +111,79 @@ class DoctrineEntityLogger
         $classMetadata = $objectManager->getClassMetadata(get_class($object));
 
         // Itera sulle proprietà dichiarate da Doctrine
-        foreach ($classMetadata->getFieldNames() as $field) {
-            $result[$field] = $classMetadata->getFieldValue($object, $field);
+        foreach ($classMetadata->getFieldNames() as $field)
+        {
+            if($this->isLoggable($classMetadata, $field))
+            {
+                $result[$field] = $classMetadata->getFieldValue($object, $field);
+            }
         }
 
-        // Itera sulle relazioni OneToOne e ManyToOne
-        foreach ($classMetadata->getAssociationNames() as $association) {
-            $relatedObject = $classMetadata->getFieldValue($object, $association);
+        // Itera sulle relazioni
+        foreach ($classMetadata->getAssociationNames() as $association)
+        {
+            if($this->isLoggable($classMetadata, $association))
+            {
+                $relatedObject = $classMetadata->getFieldValue($object, $association);
 
-            if (is_object($relatedObject)) {
-                $result[$association] = [
-                    'class' => get_class($relatedObject),
-                    'id' => method_exists($relatedObject, 'getId') ? $relatedObject->getId() : null,
-                    'toString' => method_exists($relatedObject, '__toString') ? (string)$relatedObject : null,
-                ];
-            } elseif (is_iterable($relatedObject)) { // Gestisce le collezioni OneToMany/ManyToMany
-                $relatedObjects = [];
-                foreach ($relatedObject as $item) {
-                    $relatedObjects[] = [
-                        'class' => get_class($item),
-                        'id' => method_exists($item, 'getId') ? $item->getId() : null,
-                        'toString' => method_exists($item, '__toString') ? (string)$item : null,
+                if ($relatedObject instanceof Collection)
+                {
+                    // Gestisce le collezioni OneToMany/ManyToMany
+                    $relatedObjects = [];
+                    foreach ($relatedObject as $item) {
+                        $relatedObjects[] = [
+                            'class' => str_replace('Proxies\__CG__\\', '', get_class($item)),
+                            'id' => method_exists($item, 'getId') ? $item->getId() : null,
+                            'toString' => method_exists($item, '__toString') ? (string)$item : null,
+                        ];
+                    }
+                    $result[$association] = $relatedObjects;
+                }
+                elseif (is_object($relatedObject))
+                {
+                    // Entità singola
+                    $result[$association] = [
+                        'class' => str_replace('Proxies\__CG__\\', '', get_class($relatedObject)),
+                        'id' => method_exists($relatedObject, 'getId') ? $relatedObject->getId() : null,
+                        'toString' => method_exists($relatedObject, '__toString') ? (string)$relatedObject : null,
                     ];
                 }
-                $result[$association] = $relatedObjects;
-            } else {
-                $result[$association] = null;
+                else
+                {
+                    $result[$association] = null;
+                }
             }
         }
 
         return $result;
+    }
+
+    private function serializeCollection($collection): ?array
+    {
+        if (!$collection || !is_array($collection)) {
+            return null;
+        }
+
+        $result = [];
+        foreach ($collection as $item) {
+            $result[] = [
+                'class' => str_replace('Proxies\__CG__\\', '', get_class($item)),
+                'id' => method_exists($item, 'getId') ? $item->getId() : null,
+                'toString' => method_exists($item, '__toString') ? (string)$item : null,
+            ];
+        }
+
+        return $result;
+    }
+
+
+
+    private function isLoggable(object $classMetadata, string $field): bool
+    {
+        if(in_array($field, ['createdAt', 'updatedAt','createdBy','updatedBy','createdFromIp','updatedFromIp']))
+            return false;
+
+        return true;
     }
 
     private function createLog(string $action, mixed $object, ?array $oldValues = null, ?array $newValues = null): void
