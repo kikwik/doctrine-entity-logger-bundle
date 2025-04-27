@@ -11,7 +11,10 @@ With this bundle, you can easily track modifications to your database entities a
 
 This bundle enables quick and effective logging of entity changes, making it a valuable tool for projects requiring audit trails or entity history tracking.
 
-This bundle is inspired by the manasbala/doctrine-log-bundle and the gedmo/doctrine-extensions projects.
+This bundle is inspired by the [manasbala/doctrine-log-bundle](https://github.com/manasbala/doctrine-log-bundle) and the [gedmo/doctrine-extensions](https://github.com/doctrine-extensions/DoctrineExtensions) projects.
+
+The tests for this bundle were developed with the help of the following article: [Symfony functional tests for standalone bundles](https://medium.com/@fico7489/symfony-functional-tests-for-standalone-bundles-9666045a2309).
+
 
 Installation
 ------------
