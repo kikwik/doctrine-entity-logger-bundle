@@ -1,7 +1,15 @@
 KikwikDoctrineEntityLoggerBundle
 ================================
 
-Subscriber for gedmo/doctrine-extension Blameable that set the actual command name in the createdBy and updatedBy fields
+The **KikwikDoctrineEntityLoggerBundle** is a Symfony bundle designed to log changes made to Doctrine entities. 
+With this bundle, you can easily track modifications to your database entities and maintain a historical record of changes in a dedicated table.
+
+#### Key Features:
+- Automatic logging of updates, inserts, and deletions for Doctrine entities.
+- Stores change history in a database table (`kw_entity_log`) for easy access and review.
+- Integrates seamlessly with Symfony projects.
+
+This bundle enables quick and effective logging of entity changes, making it a valuable tool for projects requiring audit trails or entity history tracking.
 
 
 Installation
