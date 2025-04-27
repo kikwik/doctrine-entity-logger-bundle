@@ -11,6 +11,7 @@ With this bundle, you can easily track modifications to your database entities a
 
 This bundle enables quick and effective logging of entity changes, making it a valuable tool for projects requiring audit trails or entity history tracking.
 
+This bundle is inspired by the manasbala/doctrine-log-bundle and the gedmo/doctrine-extensions projects.
 
 Installation
 ------------
