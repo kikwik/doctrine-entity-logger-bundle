@@ -20,9 +20,9 @@ class Log
     /* CONST                              */
     /**************************************/
 
-    const ACTION_INSERT = 'insert';
-    const ACTION_UPDATE = 'update';
-    const ACTION_DELETE = 'delete';
+    const ACTION_CREATE = 'CREATE';
+    const ACTION_UPDATE = 'UPDATE';
+    const ACTION_REMOVE = 'REMOVE';
 
     /**************************************/
     /* PROPERTIES                         */
@@ -43,8 +43,10 @@ class Log
     protected ?int $objectId = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    protected ?array $changes = null;
+    protected ?array $oldValues = null;
 
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    protected ?array $newValues = null;
 
     /**************************************/
     /* CUSTOM METHODS                     */
@@ -92,14 +94,25 @@ class Log
         return $this;
     }
 
-    public function getChanges(): ?array
+    public function getOldValues(): ?array
     {
-        return $this->changes;
+        return $this->oldValues;
     }
 
-    public function setChanges(?array $changes): Log
+    public function setOldValues(?array $oldValues): Log
     {
-        $this->changes = $changes;
+        $this->oldValues = $oldValues;
+        return $this;
+    }
+
+    public function getNewValues(): ?array
+    {
+        return $this->newValues;
+    }
+
+    public function setNewValues(?array $newValues): Log
+    {
+        $this->newValues = $newValues;
         return $this;
     }
 
