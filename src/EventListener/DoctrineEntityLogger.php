@@ -7,6 +7,7 @@ use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
+use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\Persistence\ObjectManager;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 
@@ -14,6 +15,8 @@ class DoctrineEntityLogger
 {
 
     private array $logEntries = [];
+
+    private array $updatedObjects = [];
 
     public function postPersist(PostPersistEventArgs $eventArgs)
     {
@@ -31,7 +34,6 @@ class DoctrineEntityLogger
         $object = $eventArgs->getObject();
         $classMetadata = $eventArgs->getObjectManager()->getClassMetadata(get_class($object));
 
-
         $unitOfWork = $eventArgs->getObjectManager()->getUnitOfWork();
         $oldValues = [];
         $newValues = [];
@@ -39,8 +41,29 @@ class DoctrineEntityLogger
         // Gestione dei campi semplici
         foreach ($unitOfWork->getEntityChangeSet($object) as $field => $changes) {
             if ($this->isLoggable($classMetadata, $field)) {
-                $oldValues[$field] = $changes[0];
-                $newValues[$field] = $changes[1];
+                if($classMetadata->isSingleValuedAssociation($field))
+                {
+                    $oldValues[$field] = is_null($changes[0])
+                        ? null
+                        : [
+                            'class' => str_replace('Proxies\__CG__\\', '', get_class($changes[0])),
+                            'id' => method_exists($changes[0], 'getId') ? $changes[0]->getId() : null,
+                            'toString' => method_exists($changes[0], '__toString') ? (string)$changes[0] : null,
+                        ];
+
+                    $newValues[$field] = is_null($changes[1])
+                        ? null
+                        : [
+                            'class' => str_replace('Proxies\__CG__\\', '', get_class($changes[1])),
+                            'id' => method_exists($changes[1], 'getId') ? $changes[1]->getId() : null,
+                            'toString' => method_exists($changes[1], '__toString') ? (string)$changes[1] : null,
+                        ];
+                }
+                else
+                {
+                    $oldValues[$field] = $changes[0];
+                    $newValues[$field] = $changes[1];
+                }
             }
         }
 
