@@ -11,6 +11,24 @@ class ManyToManyRelationTest extends CustomTestCase
 {
     public function testPersistManyToManyRelation(): void
     {
+        // create two tag
+        $tag1 = $this->createTag('world');
+        $tag2 = $this->createTag('trip');
+
+        // create an article with tags
+        $article = $this->createArticle('Around the World in Seventy-two Days',null, [$tag1, $tag2]);
+        $articleId = $article->getId();
+
+        // check entity log
+        $this->assertEntityLog(Article::class, $articleId,
+            Log::ACTION_CREATE,
+            null,
+            ['title' => 'Around the World in Seventy-two Days', 'id'=>$articleId, 'author' => null, 'tags'=>[['class'=>Tag::class, 'id'=>$tag1->getId(), 'toString'=>'world'], ['class'=>Tag::class, 'id'=>$tag2->getId(), 'toString'=>'trip']]]
+        );
+    }
+
+    public function testUpdateManyToManyRelation(): void
+    {
         // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days');
         $articleId = $article->getId();

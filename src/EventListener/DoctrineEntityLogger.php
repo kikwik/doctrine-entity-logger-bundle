@@ -7,7 +7,6 @@ use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
-use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\Persistence\ObjectManager;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 
@@ -15,8 +14,6 @@ class DoctrineEntityLogger
 {
 
     private array $logEntries = [];
-
-    private array $updatedObjects = [];
 
     public function postPersist(PostPersistEventArgs $eventArgs)
     {
@@ -38,26 +35,13 @@ class DoctrineEntityLogger
         $oldValues = [];
         $newValues = [];
 
-        // Gestione dei campi semplici
+        // Changes on single fields
         foreach ($unitOfWork->getEntityChangeSet($object) as $field => $changes) {
             if ($this->isLoggable($classMetadata, $field)) {
                 if($classMetadata->isSingleValuedAssociation($field))
                 {
-                    $oldValues[$field] = is_null($changes[0])
-                        ? null
-                        : [
-                            'class' => str_replace('Proxies\__CG__\\', '', get_class($changes[0])),
-                            'id' => method_exists($changes[0], 'getId') ? $changes[0]->getId() : null,
-                            'toString' => method_exists($changes[0], '__toString') ? (string)$changes[0] : null,
-                        ];
-
-                    $newValues[$field] = is_null($changes[1])
-                        ? null
-                        : [
-                            'class' => str_replace('Proxies\__CG__\\', '', get_class($changes[1])),
-                            'id' => method_exists($changes[1], 'getId') ? $changes[1]->getId() : null,
-                            'toString' => method_exists($changes[1], '__toString') ? (string)$changes[1] : null,
-                        ];
+                    $oldValues[$field] = $this->serializeReference($changes[0]);
+                    $newValues[$field] = $this->serializeReference($changes[1]);
                 }
                 else
                 {
@@ -67,7 +51,7 @@ class DoctrineEntityLogger
             }
         }
 
-        // Cambiamenti sulle collezioni aggiornate
+        // Changes on updated collections
         foreach ($unitOfWork->getScheduledCollectionUpdates() as $collectionUpdate) {
             if ($collectionUpdate->getOwner() === $object) {
                 $association = $collectionUpdate->getMapping()['fieldName'];
@@ -78,7 +62,7 @@ class DoctrineEntityLogger
             }
         }
 
-        // Collezioni pianificate per eliminazione
+        // Changes on removed collections
         foreach ($unitOfWork->getScheduledCollectionDeletions() as $collectionDeletion) {
             if ($collectionDeletion->getOwner() === $object) {
                 $association = $collectionDeletion->getMapping()['fieldName'];
@@ -88,7 +72,6 @@ class DoctrineEntityLogger
                 }
             }
         }
-
 
         $this->createLog(
             Log::ACTION_UPDATE,
@@ -133,7 +116,7 @@ class DoctrineEntityLogger
 
         $classMetadata = $objectManager->getClassMetadata(get_class($object));
 
-        // Itera sulle proprietà dichiarate da Doctrine
+        // Loop over Doctrine poperties
         foreach ($classMetadata->getFieldNames() as $field)
         {
             if($this->isLoggable($classMetadata, $field))
@@ -142,7 +125,7 @@ class DoctrineEntityLogger
             }
         }
 
-        // Itera sulle relazioni
+        // Loop over Doctrine relations
         foreach ($classMetadata->getAssociationNames() as $association)
         {
             if($this->isLoggable($classMetadata, $association))
@@ -151,34 +134,34 @@ class DoctrineEntityLogger
 
                 if ($relatedObject instanceof Collection)
                 {
-                    // Gestisce le collezioni OneToMany/ManyToMany
+                    // OneToMany/ManyToMany Collection
                     $relatedObjects = [];
                     foreach ($relatedObject as $item) {
-                        $relatedObjects[] = [
-                            'class' => str_replace('Proxies\__CG__\\', '', get_class($item)),
-                            'id' => method_exists($item, 'getId') ? $item->getId() : null,
-                            'toString' => method_exists($item, '__toString') ? (string)$item : null,
-                        ];
+                        $relatedObjects[] = $this->serializeReference($item);
                     }
                     $result[$association] = $relatedObjects;
                 }
-                elseif (is_object($relatedObject))
-                {
-                    // Entità singola
-                    $result[$association] = [
-                        'class' => str_replace('Proxies\__CG__\\', '', get_class($relatedObject)),
-                        'id' => method_exists($relatedObject, 'getId') ? $relatedObject->getId() : null,
-                        'toString' => method_exists($relatedObject, '__toString') ? (string)$relatedObject : null,
-                    ];
-                }
                 else
                 {
-                    $result[$association] = null;
+                    // ManyToOne relation
+                    $result[$association] = $this->serializeReference($relatedObject);
                 }
             }
         }
 
         return $result;
+    }
+
+    private function serializeReference(mixed $object): ?array
+    {
+        if(is_null($object))
+            return null;
+
+        return [
+            'class' => str_replace('Proxies\__CG__\\', '', get_class($object)),
+            'id' => method_exists($object, 'getId') ? $object->getId() : null,
+            'toString' => method_exists($object, '__toString') ? (string)$object : null,
+        ];
     }
 
     private function serializeCollection($collection): ?array
@@ -189,11 +172,7 @@ class DoctrineEntityLogger
 
         $result = [];
         foreach ($collection as $item) {
-            $result[] = [
-                'class' => str_replace('Proxies\__CG__\\', '', get_class($item)),
-                'id' => method_exists($item, 'getId') ? $item->getId() : null,
-                'toString' => method_exists($item, '__toString') ? (string)$item : null,
-            ];
+            $result[] = $this->serializeReference($item);
         }
 
         return $result;
