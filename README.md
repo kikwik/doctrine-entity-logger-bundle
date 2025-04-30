@@ -40,3 +40,18 @@ $ php bin/console doctrine:migrations:migrate
 ```
 
 
+Easy Admin
+----------
+
+If you are using easy admin you can create a ready-to-use Crud controller by extending `KikwikLogCrudController`:
+
+```php
+namespace App\Controller\Admin;
+
+use Kikwik\DoctrineEntityLoggerBundle\EasyAdmin\KikwikLogCrudController;
+
+class LogCrudController extends KikwikLogCrudController
+{
+
+}
+```

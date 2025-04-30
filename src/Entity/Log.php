@@ -52,6 +52,11 @@ class Log
     /* CUSTOM METHODS                     */
     /**************************************/
 
+    public function getChangedFields(): array
+    {
+        return array_unique(array_merge(array_keys($this->oldValues ?? []), array_keys($this->newValues ?? [])));
+    }
+
     /**************************************/
     /* GETTERS & SETTERS                  */
     /**************************************/

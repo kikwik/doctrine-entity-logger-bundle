@@ -1,0 +1,58 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% if ea.crud.currentPage == constant('EasyCorp\\Bundle\\EasyAdminBundle\\Config\\Crud::PAGE_DETAIL') %}
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Old value</th>
+                <th>New value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for changedField in entity.instance.changedFields %}
+                <tr>
+                    <td>{{ changedField }}</td>
+                    <td>
+                        {% if entity.instance.oldValues[changedField] is defined %}
+                            {{ _self.renderJson(entity.instance.oldValues[changedField]) }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if entity.instance.newValues[changedField] is defined %}
+                            {{ _self.renderJson(entity.instance.newValues[changedField]) }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    {% for changedField in entity.instance.changedFields %}
+        <span class="badge badge-outline">{{ changedField }}</span>
+    {% endfor %}
+{% endif %}
+
+
+
+{% macro renderJson(values) %}
+    {% if values | length == 3 and values.class is defined and values.id is defined and values.toString is defined %}
+        <span class="badge badge-outline">{{ values.toString }}</span>
+    {% elseif values | length == 3 and values.date is defined and values.timezone is defined and values.timezone_type is defined %}
+        {{ values.date | format_datetime(timezone: values.timezone) }}
+    {% elseif values is iterable %}
+        <ul class="list-unstyled mb-0">
+            {% for item in values %}
+                <li>{{ _self.renderJson(item) }}</li>
+            {% endfor %}
+        </ul>
+    {% elseif values is same as false %}
+        <span class="badge badge-boolean-false">No</span>
+    {% elseif values is same as true %}
+        <span class="badge badge-boolean-true">Si</span>
+    {% elseif values is null %}
+        <span class="badge badge-outline">Null</span>
+    {% else %}
+        {{ values }}
+    {% endif %}
+{% endmacro %}
