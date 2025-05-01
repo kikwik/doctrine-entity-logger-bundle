@@ -1,5 +1,6 @@
-orm:
-    default:
-        timestampable: true
-        blameable: true
-        ip_traceable: true
+stof_doctrine_extensions:
+    orm:
+        default:
+            timestampable: true
+            blameable: true
+            ip_traceable: true

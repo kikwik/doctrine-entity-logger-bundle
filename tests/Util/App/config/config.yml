@@ -15,10 +15,3 @@ doctrine:
             Bundle:
                 dir: '%kernel.project_dir%/../../src/Entity'
                 prefix: 'Kikwik\DoctrineEntityLoggerBundle\Entity'
-
-stof_doctrine_extensions:
-    orm:
-        default:
-            timestampable: true
-            blameable: true
-            ip_traceable: true
