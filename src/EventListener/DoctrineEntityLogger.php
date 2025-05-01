@@ -80,12 +80,15 @@ class DoctrineEntityLogger
                 }
             }
 
-            $this->createLog(
-                Log::ACTION_UPDATE,
-                $object,
-                $oldValues,
-                $newValues
-            );
+            if(count($oldValues) || count($newValues))
+            {
+                $this->createLog(
+                    Log::ACTION_UPDATE,
+                    $object,
+                    $oldValues,
+                    $newValues
+                );
+            }
         }
 
     }

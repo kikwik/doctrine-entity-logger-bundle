@@ -4,8 +4,8 @@ namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Functional;
 
 
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
+use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Author;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\CustomTestCase;
-use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Author;
 
 class LoggableEntityTest extends CustomTestCase
 {
@@ -61,4 +61,21 @@ class LoggableEntityTest extends CustomTestCase
         );
     }
 
+
+    public function testEntityLogNotCreatedWhenNoChange()
+    {
+        // create an author
+        $author = $this->createAuthor('Joseph Pulitzer');
+        $authorId = $author->getId();
+
+        // check entity log
+        $this->assertCount(1,$this->getRepository(Log::class)->findAll());
+
+        // update the createdBy field
+        $author->setCreatedBy('test command');
+        $this->getEntityManager()->flush();
+
+        // check that no other entity log was created
+        $this->assertCount(1,$this->getRepository(Log::class)->findAll());
+    }
 }

@@ -11,7 +11,7 @@ doctrine:
         mappings:
             Test:
                 dir: '%kernel.project_dir%/'
-                prefix: 'Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity'
+                prefix: 'Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity'
             Bundle:
                 dir: '%kernel.project_dir%/../../src/Entity'
                 prefix: 'Kikwik\DoctrineEntityLoggerBundle\Entity'

@@ -3,9 +3,9 @@
 namespace Functional;
 
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
+use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Article;
+use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Author;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\CustomTestCase;
-use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Article;
-use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Author;
 
 class LoggableManyToOneRelationTest extends CustomTestCase
 {

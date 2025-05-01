@@ -1,24 +1,28 @@
 <?php
 
-namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity;
+namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Blameable\Traits\BlameableEntity;
 use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 
 #[ORM\Entity]
 #[LoggableEntity]
-class Tag
+class Author
 {
+    use BlameableEntity;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     public ?int $id = null;
 
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $name = '';
 
-    #[ORM\ManyToMany(targetEntity: Article::class, mappedBy: 'tags')]
+    #[ORM\OneToMany(targetEntity: Article::class, mappedBy: 'author')]
     private Collection $articles;
 
     public function __toString(): string
@@ -36,7 +40,7 @@ class Tag
         return $this->name;
     }
 
-    public function setName(?string $name): Tag
+    public function setName(?string $name): Author
     {
         $this->name = $name;
         return $this;
@@ -47,17 +51,9 @@ class Tag
         return $this->articles;
     }
 
-    public function addArticle(Article $article): Tag
+    public function setArticles(Collection $articles): Author
     {
-        if (!$this->articles->contains($article)) {
-            $this->articles->add($article);
-        }
-        return $this;
-    }
-
-    public function removeArticle(Article $article): Tag
-    {
-        $this->articles->removeElement($article);
+        $this->articles = $articles;
         return $this;
     }
 

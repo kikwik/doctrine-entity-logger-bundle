@@ -1,6 +1,6 @@
 <?php
 
-namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity;
+namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 

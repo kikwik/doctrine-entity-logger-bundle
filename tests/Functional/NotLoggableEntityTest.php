@@ -3,8 +3,8 @@
 namespace Functional;
 
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
+use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\User;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\CustomTestCase;
-use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\User;
 
 class NotLoggableEntityTest extends CustomTestCase
 {
