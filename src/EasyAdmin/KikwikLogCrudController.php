@@ -3,6 +3,7 @@
 namespace Kikwik\DoctrineEntityLoggerBundle\EasyAdmin;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
@@ -16,6 +17,16 @@ class KikwikLogCrudController extends AbstractCrudController
     public static function getEntityFqcn(): string
     {
         return Log::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return parent::configureCrud($crud)
+            ->setEntityLabelInPlural('Logs')
+            ->setDefaultSort([
+                'createdAt' => 'DESC',
+            ])
+            ;
     }
 
     public function configureActions(Actions $actions): Actions
@@ -36,7 +47,7 @@ class KikwikLogCrudController extends AbstractCrudController
             Field::new('changes')->setTemplatePath('@KikwikDoctrineEntityLogger/easy-admin/changes.html.twig'),
             DateTimeField::new('createdAt'),
             TextField::new('createdBy'),
-            TextField::new('createdFormIp'),
+            TextField::new('createdFromIp'),
         ];
     }
 }
