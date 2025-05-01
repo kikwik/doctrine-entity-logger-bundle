@@ -9,6 +9,7 @@ use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Article;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Author;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Tag;
+use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Filesystem\Filesystem;
@@ -90,6 +91,14 @@ class CustomTestCase extends KernelTestCase
         return $tag;
     }
 
+    protected function createUser(string $name): User
+    {
+        $user = new User();
+        $user->setName($name);
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
+        return $user;
+    }
 
     protected function assertEntityLog(string $objectClass, int $objectId, string $action, ?array $oldValues, ?array $newValues)
     {

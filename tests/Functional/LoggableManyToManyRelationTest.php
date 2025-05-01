@@ -7,7 +7,7 @@ use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\CustomTestCase;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Article;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Tag;
 
-class ManyToManyRelationTest extends CustomTestCase
+class LoggableManyToManyRelationTest extends CustomTestCase
 {
     public function testPersistManyToManyRelation(): void
     {

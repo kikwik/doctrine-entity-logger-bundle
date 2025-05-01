@@ -7,7 +7,9 @@ use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
+use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 
 class DoctrineEntityLogger
@@ -18,77 +20,87 @@ class DoctrineEntityLogger
     public function postPersist(PostPersistEventArgs $eventArgs)
     {
         $object = $eventArgs->getObject();
-        $this->createLog(
-            Log::ACTION_CREATE,
-            $object,
-            null,
-            $this->serializeObject($object, $eventArgs->getObjectManager())
-        );
+        if($this->isEntityLoggable($object))
+        {
+            $this->createLog(
+                Log::ACTION_CREATE,
+                $object,
+                null,
+                $this->serializeObject($object, $eventArgs->getObjectManager())
+            );
+        }
     }
 
     public function postUpdate(PostUpdateEventArgs $eventArgs)
     {
         $object = $eventArgs->getObject();
-        $classMetadata = $eventArgs->getObjectManager()->getClassMetadata(get_class($object));
+        if($this->isEntityLoggable($object))
+        {
+            $classMetadata = $eventArgs->getObjectManager()->getClassMetadata(get_class($object));
 
-        $unitOfWork = $eventArgs->getObjectManager()->getUnitOfWork();
-        $oldValues = [];
-        $newValues = [];
+            $unitOfWork = $eventArgs->getObjectManager()->getUnitOfWork();
+            $oldValues = [];
+            $newValues = [];
 
-        // Changes on single fields
-        foreach ($unitOfWork->getEntityChangeSet($object) as $field => $changes) {
-            if ($this->isLoggable($classMetadata, $field)) {
-                if($classMetadata->isSingleValuedAssociation($field))
-                {
-                    $oldValues[$field] = $this->serializeReference($changes[0]);
-                    $newValues[$field] = $this->serializeReference($changes[1]);
-                }
-                else
-                {
-                    $oldValues[$field] = $changes[0];
-                    $newValues[$field] = $changes[1];
-                }
-            }
-        }
-
-        // Changes on updated collections
-        foreach ($unitOfWork->getScheduledCollectionUpdates() as $collectionUpdate) {
-            if ($collectionUpdate->getOwner() === $object) {
-                $association = $collectionUpdate->getMapping()['fieldName'];
-                if ($this->isLoggable($classMetadata, $association)) {
-                    $oldValues[$association] = $this->serializeCollection($collectionUpdate->getSnapshot());
-                    $newValues[$association] = $this->serializeCollection($collectionUpdate->toArray());
+            // Changes on single fields
+            foreach ($unitOfWork->getEntityChangeSet($object) as $field => $changes) {
+                if ($this->isPropertyLoggable($classMetadata, $field)) {
+                    if($classMetadata->isSingleValuedAssociation($field))
+                    {
+                        $oldValues[$field] = $this->serializeReference($changes[0]);
+                        $newValues[$field] = $this->serializeReference($changes[1]);
+                    }
+                    else
+                    {
+                        $oldValues[$field] = $changes[0];
+                        $newValues[$field] = $changes[1];
+                    }
                 }
             }
-        }
 
-        // Changes on removed collections
-        foreach ($unitOfWork->getScheduledCollectionDeletions() as $collectionDeletion) {
-            if ($collectionDeletion->getOwner() === $object) {
-                $association = $collectionDeletion->getMapping()['fieldName'];
-                if ($this->isLoggable($classMetadata, $association)) {
-                    $oldValues[$association] = $this->serializeCollection($collectionDeletion->getSnapshot());
-                    $newValues[$association] = null; // La collezione è stata eliminata
+            // Changes on updated collections
+            foreach ($unitOfWork->getScheduledCollectionUpdates() as $collectionUpdate) {
+                if ($collectionUpdate->getOwner() === $object) {
+                    $association = $collectionUpdate->getMapping()['fieldName'];
+                    if ($this->isPropertyLoggable($classMetadata, $association)) {
+                        $oldValues[$association] = $this->serializeCollection($collectionUpdate->getSnapshot());
+                        $newValues[$association] = $this->serializeCollection($collectionUpdate->toArray());
+                    }
                 }
             }
+
+            // Changes on removed collections
+            foreach ($unitOfWork->getScheduledCollectionDeletions() as $collectionDeletion) {
+                if ($collectionDeletion->getOwner() === $object) {
+                    $association = $collectionDeletion->getMapping()['fieldName'];
+                    if ($this->isPropertyLoggable($classMetadata, $association)) {
+                        $oldValues[$association] = $this->serializeCollection($collectionDeletion->getSnapshot());
+                        $newValues[$association] = null; // La collezione è stata eliminata
+                    }
+                }
+            }
+
+            $this->createLog(
+                Log::ACTION_UPDATE,
+                $object,
+                $oldValues,
+                $newValues
+            );
         }
 
-        $this->createLog(
-            Log::ACTION_UPDATE,
-            $object,
-            $oldValues,
-            $newValues
-        );
     }
 
     public function preRemove(PreRemoveEventArgs $eventArgs)
     {
         $object = $eventArgs->getObject();
-        $this->createLog(
-            Log::ACTION_REMOVE,
-            $object,
-            $this->serializeObject($object, $eventArgs->getObjectManager())
-        );
+        if($this->isEntityLoggable($object))
+        {
+            $this->createLog(
+                Log::ACTION_REMOVE,
+                $object,
+                $this->serializeObject($object, $eventArgs->getObjectManager())
+            );
+        }
     }
 
 
@@ -119,7 +131,7 @@ class DoctrineEntityLogger
         // Loop over Doctrine poperties
         foreach ($classMetadata->getFieldNames() as $field)
         {
-            if($this->isLoggable($classMetadata, $field))
+            if($this->isPropertyLoggable($classMetadata, $field))
             {
                 $result[$field] = $classMetadata->getFieldValue($object, $field);
             }
@@ -128,7 +140,7 @@ class DoctrineEntityLogger
         // Loop over Doctrine relations
         foreach ($classMetadata->getAssociationNames() as $association)
         {
-            if($this->isLoggable($classMetadata, $association))
+            if($this->isPropertyLoggable($classMetadata, $association))
             {
                 $relatedObject = $classMetadata->getFieldValue($object, $association);
 
@@ -178,9 +190,20 @@ class DoctrineEntityLogger
         return $result;
     }
 
+    private function isEntityLoggable(mixed $object)
+    {
+        if (!is_object($object)) {
+            return false;
+        }
 
+        $reflectionClass = new \ReflectionClass($object);
 
-    private function isLoggable(object $classMetadata, string $field): bool
+        // Controlla se la classe ha l'attributo Loggable
+        $attributes = $reflectionClass->getAttributes(LoggableEntity::class);
+        return !empty($attributes);
+    }
+
+    private function isPropertyLoggable(ClassMetadata $classMetadata, string $field): bool
     {
         if(in_array($field, ['createdAt', 'updatedAt','createdBy','updatedBy','createdFromIp','updatedFromIp']))
             return false;

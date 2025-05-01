@@ -7,7 +7,7 @@ use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\CustomTestCase;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Article;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Author;
 
-class ManyToOneRelationTest extends CustomTestCase
+class LoggableManyToOneRelationTest extends CustomTestCase
 {
     public function testPersistManyToOneRelation(): void
     {

@@ -2,13 +2,10 @@
 
 namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 
-#[ORM\Entity]
-#[LoggableEntity]
-class Author
+#[ORM\Entity()]
+class User
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -18,9 +15,6 @@ class Author
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $name = '';
-
-    #[ORM\OneToMany(targetEntity: Article::class, mappedBy: 'author')]
-    private Collection $articles;
 
     public function __toString(): string
     {
@@ -37,22 +31,9 @@ class Author
         return $this->name;
     }
 
-    public function setName(?string $name): Author
+    public function setName(?string $name): User
     {
         $this->name = $name;
         return $this;
     }
-
-    public function getArticles(): Collection
-    {
-        return $this->articles;
-    }
-
-    public function setArticles(Collection $articles): Author
-    {
-        $this->articles = $articles;
-        return $this;
-    }
-
-
 }

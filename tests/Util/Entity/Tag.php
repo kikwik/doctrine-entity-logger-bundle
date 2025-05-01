@@ -4,8 +4,10 @@ namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 
 #[ORM\Entity]
+#[LoggableEntity]
 class Tag
 {
     #[ORM\Id]

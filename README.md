@@ -39,6 +39,11 @@ $ php bin/console make:migration
 $ php bin/console doctrine:migrations:migrate
 ```
 
+Usage
+-----
+
+Add the `\Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity` attribute to the entities you want to log
+
 
 Easy Admin
 ----------

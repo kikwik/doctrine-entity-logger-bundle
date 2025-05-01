@@ -7,7 +7,7 @@ use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\CustomTestCase;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\Entity\Author;
 
-class SimpleEntityTest extends CustomTestCase
+class LoggableEntityTest extends CustomTestCase
 {
 
     public function testPersistSimpleEntity(): void
