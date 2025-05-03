@@ -51,11 +51,23 @@ class Author
         return $this->articles;
     }
 
-    public function setArticles(Collection $articles): Author
+    public function addArticles(Article $article): Author
     {
-        $this->articles = $articles;
+        if (!$this->articles->contains($article)) {
+            $this->articles->add($article);
+            $article->setAuthor($this);
+        }
         return $this;
     }
 
-
+    public function removeArticles(Article $article): Author
+    {
+        if ($this->articles->removeElement($article)) {
+            // set the owning side to null (unless already changed)
+            if ($article->getAuthor() === $this) {
+                $article->setAuthor(null);
+            }
+        }
+        return $this;
+    }
 }

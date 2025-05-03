@@ -5,7 +5,6 @@ namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\ManyToMany;
 use Gedmo\Blameable\Traits\BlameableEntity;
 use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 
@@ -26,7 +25,7 @@ class Article
     #[ORM\ManyToOne(targetEntity: Author::class)]
     private ?Author $author = null;
 
-    #[ManyToMany(targetEntity: Tag::class)]
+    #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'articles')]
     private Collection $tags;
 
     public function __toString(): string

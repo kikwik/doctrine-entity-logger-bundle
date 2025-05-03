@@ -101,7 +101,8 @@ class DoctrineEntityLogger
             $this->createLog(
                 Log::ACTION_REMOVE,
                 $object,
-                $this->serializeObject($object, $eventArgs->getObjectManager())
+                $this->serializeObject($object, $eventArgs->getObjectManager()),
+                null
             );
         }
     }

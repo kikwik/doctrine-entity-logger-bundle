@@ -54,13 +54,17 @@ class Tag
     {
         if (!$this->articles->contains($article)) {
             $this->articles->add($article);
+            $article->addTag($this);
         }
         return $this;
     }
 
     public function removeArticle(Article $article): Tag
     {
-        $this->articles->removeElement($article);
+        if($this->articles->removeElement($article))
+        {
+            $article->removeTag($this);
+        }
         return $this;
     }
 

@@ -100,13 +100,20 @@ class CustomTestCase extends KernelTestCase
         return $user;
     }
 
-    protected function assertEntityLog(string $objectClass, int $objectId, string $action, ?array $oldValues, ?array $newValues)
+    protected function assertEntityLogCount(int $expectedCount)
+    {
+        $logRepo = $this->getRepository(Log::class);
+        $logs = $logRepo->findAll();
+        $this->assertCount($expectedCount, $logs);
+    }
+
+    protected function assertEntityLogExists(string $objectClass, int $objectId, string $action, ?array $expectedOldValues, ?array $expectedNewValues)
     {
         $logRepo = $this->getRepository(Log::class);
         $log = $logRepo->findOneBy(['objectClass' => $objectClass, 'objectId' => $objectId, 'action' => $action]);
         $this->assertNotNull($log);
-        $this->assertEquals($oldValues, $log->getOldValues());
-        $this->assertEquals($newValues, $log->getNewValues());
+        $this->assertEquals($expectedOldValues, $log->getOldValues());
+        $this->assertEquals($expectedNewValues, $log->getNewValues());
     }
 
 

@@ -8,7 +8,7 @@ use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\CustomTestCase;
 
 class NotLoggableEntityTest extends CustomTestCase
 {
-    public function testPersistSimpleEntity(): void
+    public function testPersistNotLoggableEntity(): void
     {
         // create a user
         $this->createUser('Pinco Pallino');
@@ -18,11 +18,10 @@ class NotLoggableEntityTest extends CustomTestCase
         $this->assertCount(1, $users);
 
         // check that entity log is empty
-        $logs = $this->getRepository(Log::class)->findAll();
-        $this->assertCount(0, $logs);
+        $this->assertEntityLogCount(0);
     }
 
-    public function testUpdateSimpleEntity(): void
+    public function testUpdateNotLoggableEntity(): void
     {
         // create a user
         $user = $this->createUser('Pinco Pallino');
@@ -37,11 +36,10 @@ class NotLoggableEntityTest extends CustomTestCase
         $this->assertEquals('Marco Paolino', $users[0]->getName());
 
         // check that entity log is empty
-        $logs = $this->getRepository(Log::class)->findAll();
-        $this->assertCount(0, $logs);
+        $this->assertEntityLogCount(0);
     }
 
-    public function testRemoveSimpleEntity(): void
+    public function testRemoveNotLoggableEntity(): void
     {
         // create a user
         $user = $this->createUser('Pinco Pallino');
@@ -59,7 +57,6 @@ class NotLoggableEntityTest extends CustomTestCase
         $this->assertCount(0, $users);
 
         // check that entity log is empty
-        $logs = $this->getRepository(Log::class)->findAll();
-        $this->assertCount(0, $logs);
+        $this->assertEntityLogCount(0);
     }
 }
