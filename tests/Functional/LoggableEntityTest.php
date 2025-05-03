@@ -15,13 +15,14 @@ class LoggableEntityTest extends CustomTestCase
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
 
         // check entity log
-        $this->assertEntityLogCount(1);
         $this->assertEntityLogExists(Author::class, $authorId,
             Log::ACTION_CREATE,
             null,
-            ['name' => 'Joseph Pulitzer', 'id'=>$authorId, 'articles' => null]
+            ['name' => 'Joseph Pulitzer', 'id'=>$authorId, 'articles' => null, 'partner'=>null]
         );
     }
 
@@ -30,14 +31,16 @@ class LoggableEntityTest extends CustomTestCase
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
-        $this->assertEntityLogCount(1);
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
 
-        // update article
+        // update author name
         $author->setName('Martin Pulitzer');
         $this->getEntityManager()->flush();
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,2);
 
         // check entity log
-        $this->assertEntityLogCount(2);
         $this->assertEntityLogExists(Author::class, $authorId,
             Log::ACTION_UPDATE,
             ['name' => 'Joseph Pulitzer'],
@@ -51,17 +54,19 @@ class LoggableEntityTest extends CustomTestCase
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
-        $this->assertEntityLogCount(1);
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
 
         // remove the author
         $this->getEntityManager()->remove($author);
         $this->getEntityManager()->flush();
+        $this->assertRepositoryCount(Author::class, 0);
+        $this->assertRepositoryCount(Log::class,2);
 
         // check entity log
-        $this->assertEntityLogCount(2);
         $this->assertEntityLogExists(Author::class, $authorId,
             Log::ACTION_REMOVE,
-            ['name' => 'Joseph Pulitzer', 'id'=>$authorId, 'articles' => null],
+            ['name' => 'Joseph Pulitzer', 'id'=>$authorId, 'articles' => null, 'partner'=>null],
             null
         );
     }
@@ -72,15 +77,13 @@ class LoggableEntityTest extends CustomTestCase
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
-
-        // check entity log
-        $this->assertCount(1,$this->getRepository(Log::class)->findAll());
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
 
         // update the createdBy field
         $author->setCreatedBy('test command');
         $this->getEntityManager()->flush();
-
-        // check that no other entity log was created
-        $this->assertCount(1,$this->getRepository(Log::class)->findAll());
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
     }
 }

@@ -12,8 +12,6 @@ use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 #[LoggableEntity]
 class Article
 {
-    use BlameableEntity;
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

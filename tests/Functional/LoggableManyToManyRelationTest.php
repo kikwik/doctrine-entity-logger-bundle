@@ -1,6 +1,6 @@
 <?php
 
-namespace Functional;
+namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Functional;
 
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Article;
@@ -11,16 +11,21 @@ class LoggableManyToManyRelationTest extends CustomTestCase
 {
     public function testPersistManyToManyRelation(): void
     {
-        // create two tag
+        // create two tags
         $tag1 = $this->createTag('world');
-        $this->assertEntityLogCount(1);
+        $this->assertRepositoryCount(Tag::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
+
         $tag2 = $this->createTag('trip');
-        $this->assertEntityLogCount(2);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,2);
 
         // create an article with tags
         $article = $this->createArticle('Around the World in Seventy-two Days',null, [$tag1, $tag2]);
-        $this->assertEntityLogCount(3);
         $articleId = $article->getId();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,3);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -34,20 +39,26 @@ class LoggableManyToManyRelationTest extends CustomTestCase
     {
         // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days');
-        $this->assertEntityLogCount(1);
         $articleId = $article->getId();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
 
-        // create two tag
+        // create two tags
         $tag1 = $this->createTag('world');
-        $this->assertEntityLogCount(2);
+        $this->assertRepositoryCount(Tag::class, 1);
+        $this->assertRepositoryCount(Log::class,2);
+
         $tag2 = $this->createTag('trip');
-        $this->assertEntityLogCount(3);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,3);
 
         // add tags to the article
         $article->addTag($tag1);
         $article->addTag($tag2);
         $this->getEntityManager()->flush();
-        $this->assertEntityLogCount(4);
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,4);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -59,23 +70,29 @@ class LoggableManyToManyRelationTest extends CustomTestCase
 
     public function testRemoveManyToManyRelation(): void
     {
-        // create two tag
+        // create two tags
         $tag1 = $this->createTag('world');
-        $this->assertEntityLogCount(1);
+        $this->assertRepositoryCount(Tag::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
+
         $tag2 = $this->createTag('trip');
-        $this->assertEntityLogCount(2);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,2);
 
         // create an article with two tags
         $article = $this->createArticle('Around the World in Seventy-two Days',null, [$tag1, $tag2]);
-        $this->assertEntityLogCount(3);
         $articleId = $article->getId();
-
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,3);
 
         // remove tags from the article
         $article->removeTag($tag1);
         $article->removeTag($tag2);
         $this->getEntityManager()->flush();
-        $this->assertEntityLogCount(4);
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,4);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -87,22 +104,29 @@ class LoggableManyToManyRelationTest extends CustomTestCase
 
     public function testRemoveManyToManyRelatedObject(): void
     {
-        // create two tag
+        // create two tags
         $tag1 = $this->createTag('world');
         $tag1Id = $tag1->getId();
-        $this->assertEntityLogCount(1);
+        $this->assertRepositoryCount(Tag::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
+
         $tag2 = $this->createTag('trip');
-        $this->assertEntityLogCount(2);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,2);
 
         // create an article with two tags
         $article = $this->createArticle('Around the World in Seventy-two Days',null, [$tag1, $tag2]);
-        $this->assertEntityLogCount(3);
         $articleId = $article->getId();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Tag::class, 2);
+        $this->assertRepositoryCount(Log::class,3);
 
         // remove one tag from database
         $this->getEntityManager()->remove($tag1);
         $this->getEntityManager()->flush();
-        $this->assertEntityLogCount(4);
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Tag::class, 1);
+        $this->assertRepositoryCount(Log::class,4);
 
         // check entity log
         $this->assertEntityLogExists(Tag::class, $articleId,

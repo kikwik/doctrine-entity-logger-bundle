@@ -25,6 +25,9 @@ class Author
     #[ORM\OneToMany(targetEntity: Article::class, mappedBy: 'author')]
     private Collection $articles;
 
+    #[ORM\OneToOne(mappedBy: 'author', cascade: ['persist','remove'], orphanRemoval: true)]
+    private ?Partner $partner = null;
+
     public function __toString(): string
     {
         return (string)$this->name;
@@ -68,6 +71,17 @@ class Author
                 $article->setAuthor(null);
             }
         }
+        return $this;
+    }
+
+    public function getPartner(): ?Partner
+    {
+        return $this->partner;
+    }
+
+    public function setPartner(?Partner $partner): static
+    {
+        $this->partner = $partner;
         return $this;
     }
 }

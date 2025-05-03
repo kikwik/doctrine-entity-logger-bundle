@@ -8,6 +8,7 @@ use Doctrine\ORM\Tools\SchemaTool;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Article;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Author;
+use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Partner;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Tag;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -65,6 +66,16 @@ class CustomTestCase extends KernelTestCase
         return $author;
     }
 
+    protected function createPartner(string $name, Author $author): Partner
+    {
+        $partner = new Partner();
+        $partner->setName($name);
+        $partner->setAuthor($author);
+        $this->getEntityManager()->persist($partner);
+        $this->getEntityManager()->flush();
+        return $partner;
+    }
+
     protected function createArticle(string $title, ?Author $author = null, ?array $tags = null): Article
     {
         $article = new Article();
@@ -100,9 +111,9 @@ class CustomTestCase extends KernelTestCase
         return $user;
     }
 
-    protected function assertEntityLogCount(int $expectedCount)
+    protected function assertRepositoryCount(string $objectClass, int $expectedCount)
     {
-        $logRepo = $this->getRepository(Log::class);
+        $logRepo = $this->getRepository($objectClass);
         $logs = $logRepo->findAll();
         $this->assertCount($expectedCount, $logs);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Functional;
+namespace Kikwik\DoctrineEntityLoggerBundle\Tests\Functional;
 
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Article;
@@ -11,12 +11,16 @@ class LoggableManyToOneRelationTest extends CustomTestCase
 {
     public function testPersistManyToOneRelation(): void
     {
-        // create an author and an article
+        // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
-        $this->assertEntityLogCount(1);
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
+
+        // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days', $author);
-        $this->assertEntityLogCount(2);
         $articleId = $article->getId();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Log::class,2);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -28,40 +32,59 @@ class LoggableManyToOneRelationTest extends CustomTestCase
 
     public function testUpdateManyToOneRelation()
     {
-        // create an author and an article
+        // create an author
         $author1 = $this->createAuthor('Joseph Pulitzer');
-        $this->assertEntityLogCount(1);
-        $article = $this->createArticle('Around the World in Seventy-two Days', $author1);
-        $this->assertEntityLogCount(2);
-        $articleId = $article->getId();
+        $author1Id = $author1->getId();
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
 
-        // create an author and change article's author
+        // create an article
+        $article = $this->createArticle('Around the World in Seventy-two Days', $author1);
+        $articleId = $article->getId();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Log::class,2);
+
+        // create another author
         $author2 = $this->createAuthor('Joseph Ratzinger');
-        $this->assertEntityLogCount(3);
+        $author2Id = $author2->getId();
+        $this->assertRepositoryCount(Author::class, 2);
+        $this->assertRepositoryCount(Log::class,3);
+
+        // change article's author
         $article->setAuthor($author2);
         $this->getEntityManager()->flush();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Author::class, 2);
+        $this->assertRepositoryCount(Log::class,4);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
             Log::ACTION_UPDATE,
-            ['author' => ['class'=>Author::class, 'id'=>$author1->getId(), 'toString'=>'Joseph Pulitzer']],
-            ['author' => ['class'=>Author::class, 'id'=>$author2->getId(), 'toString'=>'Joseph Ratzinger']]
+            ['author' => ['class'=>Author::class, 'id'=>$author1Id, 'toString'=>'Joseph Pulitzer']],
+            ['author' => ['class'=>Author::class, 'id'=>$author2Id, 'toString'=>'Joseph Ratzinger']]
         );
     }
 
     public function testRemoveManyToOneRelation()
     {
-        // create an author and an article
+        // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
-        $this->assertEntityLogCount(1);
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
+
+        // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days', $author);
-        $this->assertEntityLogCount(2);
         $articleId = $article->getId();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Log::class,2);
+
 
         // remove author from article
         $article->setAuthor(null);
         $this->getEntityManager()->flush();
-        $this->assertEntityLogCount(3);
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,3);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -73,30 +96,65 @@ class LoggableManyToOneRelationTest extends CustomTestCase
 
     public function testRemoveManyToOneRelatedObject()
     {
-        // create an author and an article
+        // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
-        $this->assertEntityLogCount(1);
-        $article = $this->createArticle('Around the World in Seventy-two Days', $author);
-        $this->assertEntityLogCount(2);
-        $articleId = $article->getId();
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
 
-        // delete the author
+        // create an article
+        $article = $this->createArticle('Around the World in Seventy-two Days', $author);
+        $articleId = $article->getId();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Log::class,2);
+
+        // remove the author from database
         $article->setAuthor(null);
         $this->getEntityManager()->remove($author);
         $this->getEntityManager()->flush();
-        $this->assertEntityLogCount(4);
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Author::class, 0);
+        $this->assertRepositoryCount(Log::class,4);
 
         // check entity log
-        $this->assertEntityLogExists(Author::class, $articleId,
+        $this->assertEntityLogExists(Author::class, $authorId,
             Log::ACTION_REMOVE,
-            ['id'=>$authorId, 'name'=>'Joseph Pulitzer','articles'=>null],
+            ['id'=>$authorId, 'name'=>'Joseph Pulitzer','articles'=>null, 'partner'=>null],
             null
         );
         $this->assertEntityLogExists(Article::class, $articleId,
             Log::ACTION_UPDATE,
             ['author' => ['class'=>Author::class, 'id'=>$authorId, 'toString'=>'Joseph Pulitzer']],
             ['author' => null]
+        );
+    }
+
+    public function testRemoveOneToManyRelatedObject()
+    {
+        // create an author
+        $author = $this->createAuthor('Joseph Pulitzer');
+        $authorId = $author->getId();
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,1);
+
+        // create an article
+        $article = $this->createArticle('Around the World in Seventy-two Days', $author);
+        $articleId = $article->getId();
+        $this->assertRepositoryCount(Article::class, 1);
+        $this->assertRepositoryCount(Log::class,2);
+
+        // remove the article
+        $this->getEntityManager()->remove($article);
+        $this->getEntityManager()->flush();
+        $this->assertRepositoryCount(Article::class, 0);
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Log::class,3);
+
+        // check entity log
+        $this->assertEntityLogExists(Article::class, $articleId,
+            Log::ACTION_REMOVE,
+            ['id'=>$articleId, 'title'=>'Around the World in Seventy-two Days','author'=>['class'=>Author::class, 'id'=>$authorId, 'toString'=>'Joseph Pulitzer'], 'tags'=>[]],
+            null
         );
     }
 }
