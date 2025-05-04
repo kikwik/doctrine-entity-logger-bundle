@@ -42,8 +42,7 @@ class KikwikLogCrudController extends AbstractCrudController
         return [
             IdField::new('id')->onlyOnDetail(),
             TextField::new('action'),
-            TextField::new('objectClass'),
-            IntegerField::new('objectId'),
+            Field::new('object')->setTemplatePath('@KikwikDoctrineEntityLogger/easy-admin/object.html.twig'),
             Field::new('changes')->setTemplatePath('@KikwikDoctrineEntityLogger/easy-admin/changes.html.twig'),
             DateTimeField::new('createdAt'),
             TextField::new('createdBy'),
