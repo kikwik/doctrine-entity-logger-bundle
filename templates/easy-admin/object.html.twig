@@ -4,7 +4,7 @@
 
 {% set crudController = ea.crudControllers.findCrudFqcnByEntityFqcn(entity.instance.objectClass) %}
 {% if crudController %}
-    <a href="{{ ea_url().setController(crudController).setEntityId(entity.instance.objectId).setAction('detail') }}">{{ entity.instance.objectClass | replace({'App\\Entity\\':''}) }} #{{ entity.instance.objectId }}</a>
+    <a href="{{ ea_url().setController(crudController).setEntityId(entity.instance.objectId).setAction('detail') }}">{{ entity.instance.objectClass | split('\\') | last }} #{{ entity.instance.objectId }}</a>
 {% else %}
     {{ entity.instance.objectClass | split('\\') | last }} #{{ entity.instance.objectId }}
 {% endif %}
