@@ -11,16 +11,17 @@ class LoggableManyToOneRelationTest extends CustomTestCase
 {
     public function testPersistManyToOneRelation(): void
     {
+        // ensure that database is empty
+        $this->assertRepositoriesCount(0, 0, 0, 0, 0, 0);
+
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Log::class,1);
+        $this->assertRepositoriesCount(1, 0, 1, 0, 0, 0);
 
         // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days', $author);
         $articleId = $article->getId();
-        $this->assertRepositoryCount(Article::class, 1);
-        $this->assertRepositoryCount(Log::class,2);
+        $this->assertRepositoriesCount(2, 1, 1, 0, 0, 0);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -28,34 +29,36 @@ class LoggableManyToOneRelationTest extends CustomTestCase
             null,
             ['title' => 'Around the World in Seventy-two Days', 'id'=>$articleId, 'author' => ['class'=>Author::class, 'id'=>$author->getId(), 'toString'=>'Joseph Pulitzer'], 'tags'=>[]]
         );
+
+        // ensure that there are no residual updates
+        $this->getEntityManager()->flush();
+        $this->assertRepositoriesCount(2, 1, 1, 0, 0, 0);
     }
 
     public function testUpdateManyToOneRelation()
     {
+        // ensure that database is empty
+        $this->assertRepositoriesCount(0, 0, 0, 0, 0, 0);
+
         // create an author
         $author1 = $this->createAuthor('Joseph Pulitzer');
         $author1Id = $author1->getId();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Log::class,1);
+        $this->assertRepositoriesCount(1, 0, 1, 0, 0, 0);
 
         // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days', $author1);
         $articleId = $article->getId();
-        $this->assertRepositoryCount(Article::class, 1);
-        $this->assertRepositoryCount(Log::class,2);
+        $this->assertRepositoriesCount(2, 1, 1, 0, 0, 0);
 
         // create another author
         $author2 = $this->createAuthor('Joseph Ratzinger');
         $author2Id = $author2->getId();
-        $this->assertRepositoryCount(Author::class, 2);
-        $this->assertRepositoryCount(Log::class,3);
+        $this->assertRepositoriesCount(3, 1, 2, 0, 0, 0);
 
         // change article's author
         $article->setAuthor($author2);
         $this->getEntityManager()->flush();
-        $this->assertRepositoryCount(Article::class, 1);
-        $this->assertRepositoryCount(Author::class, 2);
-        $this->assertRepositoryCount(Log::class,4);
+        $this->assertRepositoriesCount(4, 1, 2, 0, 0, 0);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -63,28 +66,30 @@ class LoggableManyToOneRelationTest extends CustomTestCase
             ['author' => ['class'=>Author::class, 'id'=>$author1Id, 'toString'=>'Joseph Pulitzer']],
             ['author' => ['class'=>Author::class, 'id'=>$author2Id, 'toString'=>'Joseph Ratzinger']]
         );
+
+        // ensure that there are no residual updates
+        $this->getEntityManager()->flush();
+        $this->assertRepositoriesCount(4, 1, 2, 0, 0, 0);
     }
 
     public function testRemoveManyToOneRelation()
     {
+        // ensure that database is empty
+        $this->assertRepositoriesCount(0, 0, 0, 0, 0, 0);
+
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Log::class,1);
+        $this->assertRepositoriesCount(1, 0, 1, 0, 0, 0);
 
         // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days', $author);
         $articleId = $article->getId();
-        $this->assertRepositoryCount(Article::class, 1);
-        $this->assertRepositoryCount(Log::class,2);
-
+        $this->assertRepositoriesCount(2, 1, 1, 0, 0, 0);
 
         // remove author from article
         $article->setAuthor(null);
         $this->getEntityManager()->flush();
-        $this->assertRepositoryCount(Article::class, 1);
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Log::class,3);
+        $this->assertRepositoriesCount(3, 1, 1, 0, 0, 0);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -92,29 +97,32 @@ class LoggableManyToOneRelationTest extends CustomTestCase
             ['author' => ['class'=>Author::class, 'id'=>$author->getId(), 'toString'=>'Joseph Pulitzer']],
             ['author' => null]
         );
+
+        // ensure that there are no residual updates
+        $this->getEntityManager()->flush();
+        $this->assertRepositoriesCount(3, 1, 1, 0, 0, 0);
     }
 
     public function testRemoveManyToOneRelatedObject()
     {
+        // ensure that database is empty
+        $this->assertRepositoriesCount(0, 0, 0, 0, 0, 0);
+
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Log::class,1);
+        $this->assertRepositoriesCount(1, 0, 1, 0, 0, 0);
 
         // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days', $author);
         $articleId = $article->getId();
-        $this->assertRepositoryCount(Article::class, 1);
-        $this->assertRepositoryCount(Log::class,2);
+        $this->assertRepositoriesCount(2, 1, 1, 0, 0, 0);
 
         // remove the author from database
         $article->setAuthor(null);
         $this->getEntityManager()->remove($author);
         $this->getEntityManager()->flush();
-        $this->assertRepositoryCount(Article::class, 1);
-        $this->assertRepositoryCount(Author::class, 0);
-        $this->assertRepositoryCount(Log::class,4);
+        $this->assertRepositoriesCount(4, 1, 0, 0, 0, 0);
 
         // check entity log
         $this->assertEntityLogExists(Author::class, $authorId,
@@ -127,28 +135,31 @@ class LoggableManyToOneRelationTest extends CustomTestCase
             ['author' => ['class'=>Author::class, 'id'=>$authorId, 'toString'=>'Joseph Pulitzer']],
             ['author' => null]
         );
+
+        // ensure that there are no residual updates
+        $this->getEntityManager()->flush();
+        $this->assertRepositoriesCount(4, 1, 0, 0, 0, 0);
     }
 
     public function testRemoveOneToManyRelatedObject()
     {
+        // ensure that database is empty
+        $this->assertRepositoriesCount(0, 0, 0, 0, 0, 0);
+
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Log::class,1);
+        $this->assertRepositoriesCount(1, 0, 1, 0, 0, 0);
 
         // create an article
         $article = $this->createArticle('Around the World in Seventy-two Days', $author);
         $articleId = $article->getId();
-        $this->assertRepositoryCount(Article::class, 1);
-        $this->assertRepositoryCount(Log::class,2);
+        $this->assertRepositoriesCount(2, 1, 1, 0, 0, 0);
 
         // remove the article
         $this->getEntityManager()->remove($article);
         $this->getEntityManager()->flush();
-        $this->assertRepositoryCount(Article::class, 0);
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Log::class,3);
+        $this->assertRepositoriesCount(3, 0, 1, 0, 0, 0);
 
         // check entity log
         $this->assertEntityLogExists(Article::class, $articleId,
@@ -156,5 +167,9 @@ class LoggableManyToOneRelationTest extends CustomTestCase
             ['id'=>$articleId, 'title'=>'Around the World in Seventy-two Days','author'=>['class'=>Author::class, 'id'=>$authorId, 'toString'=>'Joseph Pulitzer'], 'tags'=>[]],
             null
         );
+
+        // ensure that there are no residual updates
+        $this->getEntityManager()->flush();
+        $this->assertRepositoriesCount(3, 0, 1, 0, 0, 0);
     }
 }

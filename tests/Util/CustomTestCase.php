@@ -111,11 +111,28 @@ class CustomTestCase extends KernelTestCase
         return $user;
     }
 
+    protected function assertRepositoriesCount(
+        int $logs,
+        int $articles,
+        int $authors,
+        int $partners,
+        int $tags,
+        int $users
+    )
+    {
+        $this->assertRepositoryCount(Article::class, $articles);
+        $this->assertRepositoryCount(Author::class, $authors);
+        $this->assertRepositoryCount(Partner::class, $partners);
+        $this->assertRepositoryCount(Tag::class, $tags);
+        $this->assertRepositoryCount(User::class, $users);
+        $this->assertRepositoryCount(Log::class, $logs);
+    }
+
     protected function assertRepositoryCount(string $objectClass, int $expectedCount)
     {
-        $logRepo = $this->getRepository($objectClass);
-        $logs = $logRepo->findAll();
-        $this->assertCount($expectedCount, $logs);
+        $repository = $this->getRepository($objectClass);
+        $objects = $repository->findAll();
+        $this->assertCount($expectedCount, $objects, sprintf('Expected %d %s in database, %d found', $expectedCount, str_replace(['Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\\','Kikwik\DoctrineEntityLoggerBundle\Entity\\'],['',''],$objectClass), count($objects)));
     }
 
     protected function assertEntityLogExists(string $objectClass, int $objectId, string $action, ?array $expectedOldValues, ?array $expectedNewValues)

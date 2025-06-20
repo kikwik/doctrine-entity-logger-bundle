@@ -11,19 +11,18 @@ class LoggableOneToOneRelationTest extends CustomTestCase
 {
     public function testPersistOneToOneRelation(): void
     {
+        // ensure that database is empty
+        $this->assertRepositoriesCount(0, 0, 0, 0, 0, 0);
+
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Partner::class, 0);
-        $this->assertRepositoryCount(Log::class,1);
+        $this->assertRepositoriesCount(1, 0, 1, 0, 0, 0);
 
         // create a partner
         $partner = $this->createPartner('Vaticano', $author);
         $partnerId = $partner->getId();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Partner::class, 1);
-        $this->assertRepositoryCount(Log::class,2);
+        $this->assertRepositoriesCount(2, 0, 1, 1, 0, 0);
 
         // check entity log
         $this->assertEntityLogExists(Author::class, $authorId,
@@ -39,33 +38,28 @@ class LoggableOneToOneRelationTest extends CustomTestCase
 
         // ensure that there are no residual updates
         $this->getEntityManager()->flush();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Partner::class, 1);
-        $this->assertRepositoryCount(Log::class,2);
+        $this->assertRepositoriesCount(2, 0, 1, 1, 0, 0);
     }
 
     public function testRemoveOneToOneRelation(): void
     {
+        // ensure that database is empty
+        $this->assertRepositoriesCount(0, 0, 0, 0, 0, 0);
+
         // create an author
         $author = $this->createAuthor('Joseph Pulitzer');
         $authorId = $author->getId();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Partner::class, 0);
-        $this->assertRepositoryCount(Log::class,1);
+        $this->assertRepositoriesCount(1, 0, 1, 0, 0, 0);
 
         // create a partner
         $partner = $this->createPartner('Vaticano', $author);
         $partnerId = $partner->getId();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Partner::class, 1);
-        $this->assertRepositoryCount(Log::class,2);
+        $this->assertRepositoriesCount(2, 0, 1, 1, 0, 0);
 
         // remove the partner
         $this->getEntityManager()->remove($partner);
         $this->getEntityManager()->flush();
-        $this->assertRepositoryCount(Author::class, 1);
-        $this->assertRepositoryCount(Partner::class, 0);
-        $this->assertRepositoryCount(Log::class,3);
+        $this->assertRepositoriesCount(3, 0, 1, 0, 0, 0);
 
         // check entity log
         $this->assertEntityLogExists(Partner::class, $partnerId,
@@ -76,8 +70,6 @@ class LoggableOneToOneRelationTest extends CustomTestCase
 
 //        // TODO: ensure that there are no residual updates
 //        $this->getEntityManager()->flush();
-//        $this->assertRepositoryCount(Author::class, 1);
-//        $this->assertRepositoryCount(Partner::class, 0);
-//        $this->assertRepositoryCount(Log::class,3);
+//        $this->assertRepositoriesCount(3, 0, 1, 0, 0, 0);
     }
 }
