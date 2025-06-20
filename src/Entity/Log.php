@@ -4,18 +4,12 @@ namespace Kikwik\DoctrineEntityLoggerBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Blameable\Traits\BlameableEntity;
-use Gedmo\IpTraceable\Traits\IpTraceableEntity;
-use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity()]
 #[ORM\Table(name: 'kw_entity_log')]
 class Log
 {
-    use TimestampableEntity;
-    use BlameableEntity;
-    use IpTraceableEntity;
-
     /**************************************/
     /* CONST                              */
     /**************************************/
@@ -47,6 +41,18 @@ class Log
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     protected ?array $newValues = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Gedmo\Timestampable(on: 'create')]
+    protected $createdAt;
+
+    #[ORM\Column(nullable: true)]
+    #[Gedmo\Blameable(on: 'create')]
+    protected $createdBy;
+
+    #[ORM\Column(length: 45, nullable: true)]
+    #[Gedmo\IpTraceable(on: 'create')]
+    protected $createdFromIp;
 
     /**************************************/
     /* CUSTOM METHODS                     */
@@ -121,6 +127,39 @@ class Log
         return $this;
     }
 
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTime $createdAt): Log
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getCreatedBy()
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy($createdBy): Log
+    {
+        $this->createdBy = $createdBy;
+        return $this;
+    }
+
+    public function getCreatedFromIp()
+    {
+        return $this->createdFromIp;
+    }
+
+    public function setCreatedFromIp($createdFromIp): Log
+    {
+        $this->createdFromIp = $createdFromIp;
+        return $this;
+    }
 
 
 }
