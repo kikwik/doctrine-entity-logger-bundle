@@ -135,6 +135,13 @@ class DoctrineEntityLogger
             }
 
             $this->logEntries = [];
+//            // TODO: we must clear the modification made by this listener
+//            if(count($objectManager->getUnitOfWork()->getScheduledEntityInsertions())) dump($objectManager->getUnitOfWork()->getScheduledEntityInsertions());
+//            if(count($objectManager->getUnitOfWork()->getScheduledEntityDeletions())) dump($objectManager->getUnitOfWork()->getScheduledEntityDeletions());
+//            if(count($objectManager->getUnitOfWork()->getScheduledEntityUpdates())) dump($objectManager->getUnitOfWork()->getScheduledEntityUpdates());
+//            if(count($objectManager->getUnitOfWork()->getScheduledCollectionUpdates())) dump($objectManager->getUnitOfWork()->getScheduledCollectionUpdates());
+//            if(count($objectManager->getUnitOfWork()->getScheduledCollectionDeletions())) dump($objectManager->getUnitOfWork()->getScheduledCollectionDeletions());
+
         }
     }
 

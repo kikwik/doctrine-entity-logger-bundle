@@ -39,6 +39,9 @@ $ php bin/console make:migration
 $ php bin/console doctrine:migrations:migrate
 ```
 
+> ⚠️ **Note:** In version v0.3.0 the entity definition has changed, be sure to make and run your migration
+
+
 Usage
 -----
 
