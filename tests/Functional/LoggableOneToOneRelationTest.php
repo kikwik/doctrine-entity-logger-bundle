@@ -57,6 +57,11 @@ class LoggableOneToOneRelationTest extends CustomTestCase
         $this->assertRepositoryCount(Partner::class, 0);
         $this->assertRepositoryCount(Log::class,3);
 
+        // ensure that there are no residual updates
+        $this->getEntityManager()->flush();
+        $this->assertRepositoryCount(Author::class, 1);
+        $this->assertRepositoryCount(Partner::class, 0);
+        $this->assertRepositoryCount(Log::class,3);
 
         // check entity log
         $this->assertEntityLogExists(Partner::class, $partnerId,

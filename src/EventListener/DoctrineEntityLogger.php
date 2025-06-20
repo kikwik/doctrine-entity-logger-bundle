@@ -107,21 +107,39 @@ class DoctrineEntityLogger
         }
     }
 
-
     public function postFlush(PostFlushEventArgs $eventArgs)
     {
-        if(count($this->logEntries))
+        if (count($this->logEntries))
         {
             $objectManager = $eventArgs->getObjectManager();
-            foreach($this->logEntries as $log)
+            $connection = $objectManager->getConnection();
+
+            /** @var Log $log */
+            foreach ($this->logEntries as $log)
             {
-                $objectManager->persist($log);
+                // save entity log with raw query to avoid recalling flush
+                $logClassMetadata = $objectManager->getClassMetadata(get_class($log));
+                $tableName = $logClassMetadata->getTableName();
+
+                $data = [];
+                $data[$logClassMetadata->getColumnName('action')] = $log->getAction();
+                $data[$logClassMetadata->getColumnName('objectClass')] = $log->getObjectClass();
+                $data[$logClassMetadata->getColumnName('objectId')] = $log->getObjectId();
+                $data[$logClassMetadata->getColumnName('oldValues')] = json_encode($log->getOldValues());
+                $data[$logClassMetadata->getColumnName('newValues')] = json_encode($log->getNewValues());
+                $data[$logClassMetadata->getColumnName('createdAt')] = $log->getCreatedAt()->format('Y-m-d H:i:s');
+                $data[$logClassMetadata->getColumnName('createdBy')] = $log->getCreatedBy();
+                $data[$logClassMetadata->getColumnName('createdFromIp')] = $log->getCreatedFromIp();
+
+                $connection->insert($tableName, $data);
             }
 
             $this->logEntries = [];
-            $objectManager->flush();
         }
     }
+
+
+
 
     private function serializeObject(mixed $object, ObjectManager $objectManager): ?array
     {
@@ -226,6 +244,9 @@ class DoctrineEntityLogger
         $log->setObjectId($object->getId());
         $log->setOldValues($oldValues);
         $log->setNewValues($newValues);
+        $log->setCreatedAt(new \DateTime());
+        $log->setCreatedBy('system'); // TODO: find the real values
+        $log->setCreatedFromIp('127.0.0.1'); // TODO: find the real values
         $this->logEntries[] = $log;
     }
 
