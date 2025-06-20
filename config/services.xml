@@ -6,6 +6,9 @@
     <services>
         <!-- EventListener\DoctrineEntityLogger -->
         <service id="kikwik_doctrine_entity_logger.event_listener.doctrine_entity_logger" class="Kikwik\DoctrineEntityLoggerBundle\EventListener\DoctrineEntityLogger" public="true">
+            <argument type="service" id="doctrine"/>
+            <argument type="service" id="stof_doctrine_extensions.listener.blameable"/>
+            <argument type="service" id="stof_doctrine_extensions.listener.ip_traceable"/>
             <tag name="doctrine.event_listener" event="postPersist"/>
             <tag name="doctrine.event_listener" event="postUpdate"/>
             <tag name="doctrine.event_listener" event="preRemove"/>

@@ -2,6 +2,7 @@
 
 namespace Kikwik\DoctrineEntityLoggerBundle\EventListener;
 
+use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
@@ -9,11 +10,21 @@ use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
+use Gedmo\Blameable\BlameableListener;
+use Gedmo\IpTraceable\IpTraceableListener;
 use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
 
 class DoctrineEntityLogger
 {
+
+    public function __construct(
+        private readonly Registry $doctrine,
+        private readonly BlameableListener $blameableListener,
+        private readonly IpTraceableListener $ipTraceableListener,
+    )
+    {
+    }
 
     private array $logEntries = [];
 
@@ -252,8 +263,9 @@ class DoctrineEntityLogger
         $log->setOldValues($oldValues);
         $log->setNewValues($newValues);
         $log->setCreatedAt(new \DateTime());
-        $log->setCreatedBy('system'); // TODO: find the real values
-        $log->setCreatedFromIp('127.0.0.1'); // TODO: find the real values
+        $logClassMetadata = $this->doctrine->getManager()->getClassMetadata(Log::class);
+        $log->setCreatedBy($this->blameableListener->getFieldValue($logClassMetadata, 'createdBy', null));
+        $log->setCreatedFromIp($this->ipTraceableListener->getFieldValue($logClassMetadata, 'createdFromIp', null));
         $this->logEntries[] = $log;
     }
 
