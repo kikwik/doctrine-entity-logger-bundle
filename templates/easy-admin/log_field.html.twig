@@ -1,0 +1,14 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+
+{% set logController = ea.crudControllers.findCrudFqcnByEntityFqcn('Kikwik\\DoctrineEntityLoggerBundle\\Entity\\Log') %}
+
+{% if logController %}
+    <a href="{{ ea_url()
+        .setController(logController)
+        .setAction('index')
+        .generateUrl() }}?filter=&filters[objectClass][comparison]==&filters[objectClass][value]={{ entity.fqcn }}&filters[objectId][comparison]==&filters[objectId][value]={{ entity.primaryKeyValue }}"
+       title="Logs"
+    ><i class="fas fa-history"></i></a>
+{% endif %}

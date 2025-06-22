@@ -63,3 +63,40 @@ class LogCrudController extends KikwikLogCrudController
 
 }
 ```
+
+Then add the entity log controller to your dashboard
+
+```php
+namespace App\Controller\Admin;
+
+use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
+
+class DashboardController extends AbstractDashboardController
+{
+    public function configureMenuItems(): iterable
+    {
+        // ....
+        
+        yield MenuItem::section('Log');
+        yield MenuItem::linkToCrud('Log azioni', 'fas fa-history', Log::class);
+    }
+}
+```
+
+And add the `LogField` to your loggable controller
+
+```php
+namespace App\Controller\Admin;
+
+use Kikwik\DoctrineEntityLoggerBundle\EasyAdmin\LogField;
+
+class MyCrudController extends AbstractCrudController
+{
+    public function configureFields(string $pageName): iterable
+    {
+        // ...
+        
+        yield LogField::new('log'); // 'log' is a dummy name
+    }
+}
+```

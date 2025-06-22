@@ -5,28 +5,28 @@
 {% if ea.crud.currentPage == constant('EasyCorp\\Bundle\\EasyAdminBundle\\Config\\Crud::PAGE_DETAIL') %}
     <table class="table table-striped table-bordered">
         <thead>
-            <tr>
-                <th>Field</th>
-                <th>Old value</th>
-                <th>New value</th>
-            </tr>
+        <tr>
+            <th>Field</th>
+            <th>Old value</th>
+            <th>New value</th>
+        </tr>
         </thead>
         <tbody>
-            {% for changedField in entity.instance.changedFields %}
-                <tr>
-                    <td>{{ changedField }}</td>
-                    <td>
-                        {% if entity.instance.oldValues[changedField] is defined %}
-                            {{ _self.renderJson(entity.instance.oldValues[changedField]) }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if entity.instance.newValues[changedField] is defined %}
-                            {{ _self.renderJson(entity.instance.newValues[changedField]) }}
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
+        {% for changedField in entity.instance.changedFields %}
+            <tr>
+                <td>{{ changedField }}</td>
+                <td>
+                    {% if entity.instance.oldValues[changedField] is defined %}
+                        {{ _self.renderJson(entity.instance.oldValues[changedField]) }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if entity.instance.newValues[changedField] is defined %}
+                        {{ _self.renderJson(entity.instance.newValues[changedField]) }}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
 {% else %}

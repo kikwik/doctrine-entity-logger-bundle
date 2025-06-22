@@ -4,13 +4,18 @@ namespace Kikwik\DoctrineEntityLoggerBundle\EasyAdmin;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 
 class KikwikLogCrudController extends AbstractCrudController
 {
@@ -48,5 +53,17 @@ class KikwikLogCrudController extends AbstractCrudController
             TextField::new('createdBy'),
             TextField::new('createdFromIp'),
         ];
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(ChoiceFilter::new('action')->setChoices([Log::ACTION_CREATE, Log::ACTION_UPDATE, Log::ACTION_REMOVE]))
+            ->add('objectClass')
+            ->add('objectId')
+            ->add('createdAt')
+            ->add('createdBy')
+            ->add('createdFromIp')
+            ;
     }
 }
