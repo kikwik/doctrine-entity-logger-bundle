@@ -16,3 +16,6 @@ doctrine:
             Bundle:
                 dir: '%kernel.project_dir%/../../src/Entity'
                 prefix: 'Kikwik\DoctrineEntityLoggerBundle\Entity'
+
+kikwik_doctrine_entity_logger:
+    global_excluded_fields: ['createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'createdFromIp', 'updatedFromIp']

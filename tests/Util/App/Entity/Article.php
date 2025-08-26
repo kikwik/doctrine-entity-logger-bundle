@@ -6,12 +6,18 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Blameable\Traits\BlameableEntity;
+use Gedmo\IpTraceable\Traits\IpTraceableEntity;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 
 #[ORM\Entity]
 #[LoggableEntity]
 class Article
 {
+    use TimestampableEntity;
+    use BlameableEntity;
+    use IpTraceableEntity;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -26,10 +32,6 @@ class Article
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'articles')]
     private Collection $tags;
 
-    public function __toString(): string
-    {
-        return (string)$this->title;
-    }
 
     public function __construct()
     {

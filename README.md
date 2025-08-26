@@ -41,6 +41,15 @@ $ php bin/console doctrine:migrations:migrate
 
 > ⚠️ **Note:** In version v0.3.0 the entity definition has changed, be sure to make and run your migration
 
+Configuration
+-------------
+
+Create the config file in `config/packages/kikwik_doctrine_entity_logger.yaml` wich has these defaults:
+
+```yaml
+kikwik_doctrine_entity_logger:
+    global_excluded_fields: ['createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'createdFromIp', 'updatedFromIp']
+```
 
 Usage
 -----

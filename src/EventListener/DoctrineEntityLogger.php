@@ -22,6 +22,7 @@ class DoctrineEntityLogger
         private readonly Registry $doctrine,
         private readonly BlameableListener $blameableListener,
         private readonly IpTraceableListener $ipTraceableListener,
+        private array $globalExcludedFields,
     )
     {
     }
@@ -245,7 +246,7 @@ class DoctrineEntityLogger
 
     private function isPropertyLoggable(ClassMetadata $classMetadata, string $field): bool
     {
-        if(in_array($field, ['createdAt', 'updatedAt','createdBy','updatedBy','createdFromIp','updatedFromIp']))
+        if(in_array($field, $this->globalExcludedFields))
             return false;
 
         return true;
