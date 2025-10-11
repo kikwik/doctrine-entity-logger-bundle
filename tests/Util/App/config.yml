@@ -18,4 +18,5 @@ doctrine:
                 prefix: 'Kikwik\DoctrineEntityLoggerBundle\Entity'
 
 kikwik_doctrine_entity_logger:
+    enabled: true
     global_excluded_fields: ['createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'createdFromIp', 'updatedFromIp']

@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Tools\SchemaTool;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
+use Kikwik\DoctrineEntityLoggerBundle\Service\EntityLoggerConfig;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Article;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Author;
 use Kikwik\DoctrineEntityLoggerBundle\Tests\Util\App\Entity\Partner;
@@ -55,6 +56,11 @@ class CustomTestCase extends KernelTestCase
     protected function getRepository(string $entityClass): EntityRepository
     {
         return $this->getEntityManager()->getRepository($entityClass);
+    }
+
+    protected function getEntityLoggerConfig(): EntityLoggerConfig
+    {
+        return $this->container->get('kikwik_doctrine_entity_logger.service.config');
     }
 
     protected function createAuthor(string $name): Author

@@ -14,11 +14,13 @@ use Gedmo\Blameable\BlameableListener;
 use Gedmo\IpTraceable\IpTraceableListener;
 use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
+use Kikwik\DoctrineEntityLoggerBundle\Service\EntityLoggerConfig;
 
 class DoctrineEntityLogger
 {
 
     public function __construct(
+        private readonly EntityLoggerConfig $entityLoggerConfig,
         private readonly Registry $doctrine,
         private readonly BlameableListener $blameableListener,
         private readonly IpTraceableListener $ipTraceableListener,
@@ -233,6 +235,10 @@ class DoctrineEntityLogger
 
     private function isEntityLoggable(mixed $object)
     {
+        if($this->entityLoggerConfig->isEnabled() === false) {
+            return false;
+        }
+
         if (!is_object($object)) {
             return false;
         }

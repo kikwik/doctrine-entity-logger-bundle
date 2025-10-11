@@ -48,6 +48,7 @@ Create the config file in `config/packages/kikwik_doctrine_entity_logger.yaml` w
 
 ```yaml
 kikwik_doctrine_entity_logger:
+    enabled: true
     global_excluded_fields: ['createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'createdFromIp', 'updatedFromIp']
 ```
 
@@ -55,6 +56,49 @@ Usage
 -----
 
 Add the `\Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity` attribute to the entities you want to log
+
+```php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Kikwik\DoctrineEntityLoggerBundle\Attributes\LoggableEntity;
+
+#[ORM\Entity(repositoryClass: MyEntityRepository::class)]
+#[LoggableEntity]
+class MyEntity
+{
+    // ...
+}
+```
+
+
+Disabling log
+-------------
+
+If you want to enable or disable logger at run-time inject the `Kikwik\DoctrineEntityLoggerBundle\Service\EntityLoggerConfig` service and call the `setEnabled` method:
+
+```php
+namespace App\Command;
+
+use Kikwik\DoctrineEntityLoggerBundle\Service\EntityLoggerConfig;
+
+class DoSomethingCommand extends Command
+{
+    public function __construct(
+        private EntityLoggerConfig $entityLoggerConfig,
+    )
+    {
+        parent::__construct();
+    }
+    
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $this->entityLoggerConfig->setEnabled(false);
+        //...
+    }
+}
+```
 
 
 Easy Admin

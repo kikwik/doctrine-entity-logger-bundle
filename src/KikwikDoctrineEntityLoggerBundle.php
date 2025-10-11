@@ -18,6 +18,7 @@ class KikwikDoctrineEntityLoggerBundle extends AbstractBundle
     {
         $definition->rootNode()
             ->children()
+                ->booleanNode('enabled')->defaultTrue()->end()
                 ->arrayNode('global_excluded_fields')
                     ->scalarPrototype()->end()
                     ->defaultValue(['createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'createdFromIp', 'updatedFromIp'])
@@ -30,8 +31,11 @@ class KikwikDoctrineEntityLoggerBundle extends AbstractBundle
     {
         $container->import('../config/services.php');
 
-        $builder->getDefinition('kikwik_doctrine_entity_logger.event_listener.doctrine_entity_logger')
-            ->setArgument(3, $config['global_excluded_fields']);
+        $builder->getDefinition('kikwik_doctrine_entity_logger.event_listener.logger')
+            ->setArgument(4, $config['global_excluded_fields']);
+
+        $builder->getDefinition('kikwik_doctrine_entity_logger.service.config')
+            ->setArgument(0, $config['enabled']);
     }
 
 
