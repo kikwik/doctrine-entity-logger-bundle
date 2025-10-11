@@ -19,7 +19,7 @@ class KikwikDoctrineEntityLoggerBundle extends AbstractBundle
         $definition->rootNode()
             ->children()
                 ->arrayNode('global_excluded_fields')
-                    ->scalarPrototype()->end() // Per indicare che gli elementi dell'array devono essere valori scalari
+                    ->scalarPrototype()->end()
                     ->defaultValue(['createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'createdFromIp', 'updatedFromIp'])
                 ->end()
             ->end()
@@ -28,12 +28,10 @@ class KikwikDoctrineEntityLoggerBundle extends AbstractBundle
 
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
-        $container->import('../config/services.xml');
+        $container->import('../config/services.php');
 
-        $container->services()
-            ->get('kikwik_doctrine_entity_logger.event_listener.doctrine_entity_logger')
-            ->arg('$globalExcludedFields', $config['global_excluded_fields'])
-        ;
+        $builder->getDefinition('kikwik_doctrine_entity_logger.event_listener.doctrine_entity_logger')
+            ->setArgument(3, $config['global_excluded_fields']);
     }
 
 
