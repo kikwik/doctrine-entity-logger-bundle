@@ -15,10 +15,17 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
 use Kikwik\DoctrineEntityLoggerBundle\Entity\Log;
+use Kikwik\DoctrineEntityLoggerBundle\Service\EntityLoggerConfig;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 
 class KikwikLogCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private EntityLoggerConfig $entityLoggerConfig
+    )
+    {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Log::class;
@@ -26,8 +33,9 @@ class KikwikLogCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
+        $enabled = $this->entityLoggerConfig->isEnabled() ? '(enabled)' : '(disabled)';
         return parent::configureCrud($crud)
-            ->setEntityLabelInPlural('Logs')
+            ->setEntityLabelInPlural(sprintf('Logs <small>%s</small>',$enabled))
             ->setDefaultSort([
                 'createdAt' => 'DESC',
             ])
